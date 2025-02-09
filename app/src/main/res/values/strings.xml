@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Challenge</string>
+    <string name="foto_de_perfil">Foto de perfil</string>
+    <string name="buscar">Buscar</string>
+    <string name="favoritos">Favoritos</string>
+    <string name="revisa_tu_conexion_a_internet">Revisá tu conexión a internet...</string>
+</resources>
