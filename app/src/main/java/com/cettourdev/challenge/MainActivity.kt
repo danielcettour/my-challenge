@@ -1,6 +1,5 @@
 package com.cettourdev.challenge
 
-import SearchScreen
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -52,7 +51,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.cettourdev.challenge.ui.screens.FavouritesScreen
+import com.cettourdev.challenge.favourites.FavouritesScreen
+import com.cettourdev.challenge.search.SearchScreen
 import com.cettourdev.challenge.ui.theme.ChallengeTheme
 import com.cettourdev.challenge.ui.theme.LightYellow
 import com.cettourdev.challenge.ui.theme.YellowPrimary

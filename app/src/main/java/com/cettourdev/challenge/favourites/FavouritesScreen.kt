@@ -1,4 +1,4 @@
-package com.cettourdev.challenge.ui.screens
+package com.cettourdev.challenge.favourites
 
 import android.content.Context
 import androidx.compose.foundation.layout.Column

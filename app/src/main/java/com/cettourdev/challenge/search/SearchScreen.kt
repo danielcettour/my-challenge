@@ -1,3 +1,5 @@
+package com.cettourdev.challenge.search
+
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
