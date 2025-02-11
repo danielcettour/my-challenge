@@ -47,12 +47,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.SavedStateViewModelFactory
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.cettourdev.challenge.favourites.FavouritesScreen
-import com.cettourdev.challenge.search.SearchScreen
+import com.cettourdev.challenge.search.ui.SearchScreen
+import com.cettourdev.challenge.search.ui.SearchViewModel
 import com.cettourdev.challenge.ui.theme.ChallengeTheme
 import com.cettourdev.challenge.ui.theme.LightYellow
 import com.cettourdev.challenge.ui.theme.YellowPrimary
@@ -64,9 +68,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val searchViewModel: SearchViewModel =
+                ViewModelProvider(
+                    this,
+                    SavedStateViewModelFactory(application, this),
+                )[SearchViewModel::class.java]
             ChallengeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainScreen(innerPadding)
+                    MainScreen(innerPadding, searchViewModel)
                 }
             }
         }
@@ -76,7 +85,10 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(innerPadding: PaddingValues) {
+fun MainScreen(
+    innerPadding: PaddingValues,
+    searchViewModel: SearchViewModel,
+) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
@@ -169,7 +181,7 @@ fun MainScreen(innerPadding: PaddingValues) {
                         navController = navController,
                         startDestination = "search",
                     ) {
-                        composable("search") { SearchScreen(context = context) }
+                        composable("search") { SearchScreen(context = context, searchViewModel, navController) }
                         composable("favourites") { FavouritesScreen(context = context) }
                     }
                 }
@@ -178,11 +190,16 @@ fun MainScreen(innerPadding: PaddingValues) {
                         onDismissRequest = { showDialog = false },
                         confirmButton = {
                             TextButton(onClick = { showDialog = false }) {
-                                Text("Aceptar", color = Color.DarkGray)
+                                Text("Aceptar", color = Color.DarkGray, fontSize = 16.sp)
                             }
                         },
                         title = { Text("¿Cómo funciona?") },
-                        text = { Text("Buscá los artículos desde la barra de búsqueda. Podés agregar tus productos a favoritos!") },
+                        text = {
+                            Text(
+                                "Buscá los artículos desde la barra de búsqueda. Pulsá sobre un ítem para ver más detalles. Podés agregar tus productos a favoritos!",
+                                fontSize = 16.sp,
+                            )
+                        },
                     )
                 }
             }
