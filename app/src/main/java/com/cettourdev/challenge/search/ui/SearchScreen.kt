@@ -2,8 +2,7 @@ package com.cettourdev.challenge.search.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
-import android.view.inputmethod.InputMethodManager
+import android.util.Base64
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,9 +20,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,12 +32,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.SubcomposeAsyncImage
 import com.cettourdev.challenge.R
 import com.cettourdev.challenge.ui.theme.LightGray
 import com.cettourdev.challenge.ui.theme.Orange
-import com.cettourdev.challenge.utils.Formatter.getPriceWithCurrency
+import com.cettourdev.challenge.utils.LoadImage
 import com.cettourdev.challenge.utils.NetworkManager
+import com.cettourdev.challenge.utils.Utils.getPriceWithCurrency
+import com.cettourdev.challenge.utils.Utils.hideKeyboard
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
@@ -137,7 +135,7 @@ fun SearchScreen(
                             modifier = Modifier.background(Color.Transparent),
                         )
                     },
-                    modifier = Modifier.fillMaxWidth().padding(all = 10.dp),
+                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 10.dp),
                     singleLine = true,
                     isError = isError,
                     shape = MaterialTheme.shapes.large,
@@ -191,11 +189,16 @@ fun SearchScreen(
                                             .padding(
                                                 start = 12.dp,
                                                 end = 12.dp,
-                                                top = 8.dp,
-                                                bottom = 8.dp,
+                                                top = 6.dp,
+                                                bottom = 6.dp,
                                             ).clickable {
-                                                val itemJson = Uri.encode(Gson().toJson(item))
-                                                navController.navigate("details/$itemJson")
+                                                val itemJson = Gson().toJson(item)
+                                                val encodedJson =
+                                                    Base64.encodeToString(
+                                                        itemJson.toByteArray(Charsets.UTF_8),
+                                                        Base64.URL_SAFE or Base64.NO_WRAP,
+                                                    )
+                                                navController.navigate("details/$encodedJson")
                                             },
                                     elevation = CardDefaults.elevatedCardElevation(4.dp),
                                     shape = MaterialTheme.shapes.medium,
@@ -210,7 +213,7 @@ fun SearchScreen(
                                         )
                                         Column {
                                             Text(
-                                                text = item.title.trim(),
+                                                text = item.title.trim().replace("\\s+".toRegex(), " "), // algunos nombres vienen con múltiples espacios
                                                 modifier = Modifier.padding(8.dp),
                                                 fontWeight = FontWeight.Bold,
                                                 maxLines = 3,
@@ -287,29 +290,4 @@ fun SearchScreen(
             }
         },
     )
-}
-
-@Composable
-fun LoadImage(
-    model: String,
-    modifier: Modifier = Modifier,
-) {
-    SubcomposeAsyncImage(
-        modifier = modifier,
-        model = model,
-        loading = {
-            CircularProgressIndicator(modifier = Modifier.requiredSize(40.dp))
-        },
-        contentDescription = null,
-        contentScale = ContentScale.Fit,
-    )
-}
-
-fun hideKeyboard(
-    context: Context,
-    focusManager: FocusManager,
-) {
-    focusManager.clearFocus()
-    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.hideSoftInputFromWindow(null, 0)
 }

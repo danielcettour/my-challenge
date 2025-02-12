@@ -1,9 +1,12 @@
 package com.cettourdev.challenge.utils
 
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
+import androidx.compose.ui.focus.FocusManager
 import com.cettourdev.challenge.model.ItemResponse
 import java.util.Locale
 
-object Formatter {
+object Utils {
     fun getPriceWithCurrency(
         item: ItemResponse,
         originalPrice: Boolean,
@@ -17,5 +20,14 @@ object Formatter {
             "USD" -> "US$ $formattedPrice"
             else -> formattedPrice
         }
+    }
+
+    fun hideKeyboard(
+        context: Context,
+        focusManager: FocusManager,
+    ) {
+        focusManager.clearFocus()
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(null, 0)
     }
 }

@@ -1,6 +1,5 @@
 package com.cettourdev.challenge.search.ui
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -48,7 +47,6 @@ class SearchViewModel(
                 _resultsNotmpty.value = false
             }
             _isLoading.value = false
-            Log.d("////", "result: $result")
         }
     }
 }

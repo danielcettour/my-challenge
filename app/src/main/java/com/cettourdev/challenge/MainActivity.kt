@@ -50,11 +50,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.cettourdev.challenge.favourites.FavouritesScreen
+import com.cettourdev.challenge.search.ui.DetailsScreen
 import com.cettourdev.challenge.search.ui.SearchScreen
 import com.cettourdev.challenge.search.ui.SearchViewModel
 import com.cettourdev.challenge.ui.theme.ChallengeTheme
@@ -100,6 +103,7 @@ fun MainScreen(
     MaterialTheme(colorScheme = customColorScheme) {
         ModalNavigationDrawer(
             drawerState = drawerState,
+            gesturesEnabled = true,
             drawerContent = {
                 ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
                     Box(
@@ -177,12 +181,31 @@ fun MainScreen(
                             .fillMaxSize()
                             .padding(it),
                 ) {
-                    NavHost(
+                    /*NavHost(
                         navController = navController,
                         startDestination = "search",
                     ) {
                         composable("search") { SearchScreen(context = context, searchViewModel, navController) }
                         composable("favourites") { FavouritesScreen(context = context) }
+                    }*/
+                    NavHost(
+                        navController = navController,
+                        startDestination = "search",
+                    ) {
+                        composable("search") {
+                            SearchScreen(context = context, searchViewModel, navController)
+                        }
+                        composable("favourites") {
+                            FavouritesScreen(context = context)
+                        }
+                        composable(
+                            "details/{itemJson}",
+                            arguments = listOf(navArgument("itemJson") { type = NavType.StringType }),
+                        ) { backStackEntry ->
+                            backStackEntry.arguments?.getString("itemJson")?.let { itemJson ->
+                                DetailsScreen(itemJson, context)
+                            }
+                        }
                     }
                 }
                 if (showDialog) {
