@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,8 +49,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.SavedStateViewModelFactory
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -64,18 +63,17 @@ import com.cettourdev.challenge.ui.theme.ChallengeTheme
 import com.cettourdev.challenge.ui.theme.LightYellow
 import com.cettourdev.challenge.ui.theme.YellowPrimary
 import com.cettourdev.challenge.ui.theme.customColorScheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val searchViewModel: SearchViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val searchViewModel: SearchViewModel =
-                ViewModelProvider(
-                    this,
-                    SavedStateViewModelFactory(application, this),
-                )[SearchViewModel::class.java]
             ChallengeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MainScreen(innerPadding, searchViewModel)
@@ -108,9 +106,9 @@ fun MainScreen(
                 ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
                     Box(
                         modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(30.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(30.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -122,12 +120,17 @@ fun MainScreen(
                     }
                     NavigationDrawerItem(
                         colors =
-                            NavigationDrawerItemDefaults.colors(
-                                selectedContainerColor = LightYellow,
-                                selectedTextColor = Color.Black,
-                                selectedIconColor = Color.Black,
-                            ),
-                        icon = { Icon(imageVector = Icons.Filled.Search, contentDescription = "Buscar") },
+                        NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = LightYellow,
+                            selectedTextColor = Color.Black,
+                            selectedIconColor = Color.Black,
+                        ),
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "Buscar"
+                            )
+                        },
                         label = { Text(stringResource(R.string.buscar)) },
                         selected = currentRoute == "search",
                         onClick = {
@@ -137,12 +140,17 @@ fun MainScreen(
                     )
                     NavigationDrawerItem(
                         colors =
-                            NavigationDrawerItemDefaults.colors(
-                                selectedContainerColor = LightYellow,
-                                selectedTextColor = Color.Black,
-                                selectedIconColor = Color.Black,
-                            ),
-                        icon = { Icon(imageVector = Icons.Filled.Favorite, contentDescription = "Favoritos") },
+                        NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = LightYellow,
+                            selectedTextColor = Color.Black,
+                            selectedIconColor = Color.Black,
+                        ),
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Favorite,
+                                contentDescription = "Favoritos"
+                            )
+                        },
                         label = { Text(stringResource(R.string.favoritos)) },
                         selected = currentRoute == "favourites",
                         onClick = {
@@ -156,12 +164,17 @@ fun MainScreen(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("", fontSize = MaterialTheme.typography.titleLarge.fontSize) },
+                        title = {
+                            Text(
+                                "",
+                                fontSize = MaterialTheme.typography.titleLarge.fontSize
+                            )
+                        },
                         colors =
-                            TopAppBarDefaults.topAppBarColors(
-                                containerColor = YellowPrimary,
-                                titleContentColor = Color.Black,
-                            ),
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = YellowPrimary,
+                            titleContentColor = Color.Black,
+                        ),
                         navigationIcon = {
                             IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
                                 Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
@@ -169,7 +182,10 @@ fun MainScreen(
                         },
                         actions = {
                             IconButton(onClick = { showDialog = true }) {
-                                Icon(imageVector = Icons.AutoMirrored.Filled.HelpOutline, contentDescription = "Ayuda")
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                                    contentDescription = "Ayuda"
+                                )
                             }
                         },
                     )
@@ -177,17 +193,10 @@ fun MainScreen(
             ) {
                 Surface(
                     modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .padding(it),
+                    Modifier
+                        .fillMaxSize()
+                        .padding(it),
                 ) {
-                    /*NavHost(
-                        navController = navController,
-                        startDestination = "search",
-                    ) {
-                        composable("search") { SearchScreen(context = context, searchViewModel, navController) }
-                        composable("favourites") { FavouritesScreen(context = context) }
-                    }*/
                     NavHost(
                         navController = navController,
                         startDestination = "search",
@@ -200,7 +209,9 @@ fun MainScreen(
                         }
                         composable(
                             "details/{itemJson}",
-                            arguments = listOf(navArgument("itemJson") { type = NavType.StringType }),
+                            arguments = listOf(navArgument("itemJson") {
+                                type = NavType.StringType
+                            }),
                         ) { backStackEntry ->
                             backStackEntry.arguments?.getString("itemJson")?.let { itemJson ->
                                 DetailsScreen(itemJson, context)

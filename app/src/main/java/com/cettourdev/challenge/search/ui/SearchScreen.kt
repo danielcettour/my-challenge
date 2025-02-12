@@ -10,8 +10,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -85,42 +87,44 @@ fun SearchScreen(
             }
         },
         content = {
-            Column(modifier = Modifier.fillMaxSize().background(LightGray)) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(LightGray)) {
                 OutlinedTextField(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions =
-                        KeyboardActions(
-                            onSearch = {
-                                if (textState.isBlank()) {
-                                    isError = true
-                                    return@KeyboardActions
-                                }
-                                isError = false
-                                hideKeyboard(context, focusManager)
-                                val isConnected = NetworkManager.isConnected(context)
+                    KeyboardActions(
+                        onSearch = {
+                            if (textState.isBlank()) {
+                                isError = true
+                                return@KeyboardActions
+                            }
+                            isError = false
+                            hideKeyboard(context, focusManager)
+                            val isConnected = NetworkManager.isConnected(context)
 
-                                coroutineScope.launch {
-                                    if (isConnected) {
-                                        searchViewModel.onSearch()
-                                    } else {
-                                        snackbarHostState.showSnackbar(
-                                            context.getString(R.string.revisa_tu_conexion_a_internet),
-                                            duration = SnackbarDuration.Short,
-                                        )
-                                    }
+                            coroutineScope.launch {
+                                if (isConnected) {
+                                    searchViewModel.onSearch()
+                                } else {
+                                    snackbarHostState.showSnackbar(
+                                        context.getString(R.string.revisa_tu_conexion_a_internet),
+                                        duration = SnackbarDuration.Short,
+                                    )
                                 }
-                            },
-                        ),
+                            }
+                        },
+                    ),
                     colors =
-                        OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedLabelColor = Color.DarkGray,
-                            unfocusedLabelColor = Color.Gray,
-                            focusedBorderColor = Color.Gray,
-                            unfocusedBorderColor = Color.Gray,
-                            cursorColor = Color.Gray,
-                        ),
+                    OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedLabelColor = Color.DarkGray,
+                        unfocusedLabelColor = Color.Gray,
+                        focusedBorderColor = Color.Gray,
+                        unfocusedBorderColor = Color.Gray,
+                        cursorColor = Color.Gray,
+                    ),
                     value = textState,
                     onValueChange = {
                         textState = it
@@ -135,7 +139,9 @@ fun SearchScreen(
                             modifier = Modifier.background(Color.Transparent),
                         )
                     },
-                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp, top = 10.dp),
                     singleLine = true,
                     isError = isError,
                     shape = MaterialTheme.shapes.large,
@@ -175,8 +181,13 @@ fun SearchScreen(
                 )
 
                 if (isLoading) {
-                    Box(Modifier.fillMaxSize().align(Alignment.CenterHorizontally)) {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.DarkGray)
+                    Box(Modifier
+                        .fillMaxSize()
+                        .align(Alignment.CenterHorizontally)) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = Color.DarkGray
+                        )
                     }
                 } else {
                     if (resultsNotmpty) {
@@ -184,27 +195,30 @@ fun SearchScreen(
                             items(searchResults) { item ->
                                 Card(
                                     modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(
-                                                start = 12.dp,
-                                                end = 12.dp,
-                                                top = 6.dp,
-                                                bottom = 6.dp,
-                                            ).clickable {
-                                                val itemJson = Gson().toJson(item)
-                                                val encodedJson =
-                                                    Base64.encodeToString(
-                                                        itemJson.toByteArray(Charsets.UTF_8),
-                                                        Base64.URL_SAFE or Base64.NO_WRAP,
-                                                    )
-                                                navController.navigate("details/$encodedJson")
-                                            },
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            start = 12.dp,
+                                            end = 12.dp,
+                                            top = 6.dp,
+                                            bottom = 6.dp,
+                                        )
+                                        .clickable {
+                                            val itemJson = Gson().toJson(item)
+                                            val encodedJson =
+                                                Base64.encodeToString(
+                                                    itemJson.toByteArray(Charsets.UTF_8),
+                                                    Base64.URL_SAFE or Base64.NO_WRAP,
+                                                )
+                                            navController.navigate("details/$encodedJson")
+                                        },
                                     elevation = CardDefaults.elevatedCardElevation(4.dp),
                                     shape = MaterialTheme.shapes.medium,
                                     border = BorderStroke(width = 1.dp, Color.LightGray),
                                 ) {
-                                    Row(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                                    Row(modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.White)) {
                                         LoadImage(
                                             item.thumbnail.replace("http://", "https://"),
                                             Modifier
@@ -213,7 +227,10 @@ fun SearchScreen(
                                         )
                                         Column {
                                             Text(
-                                                text = item.title.trim().replace("\\s+".toRegex(), " "), // algunos nombres vienen con múltiples espacios
+                                                text = item.title.trim().replace(
+                                                    "\\s+".toRegex(),
+                                                    " "
+                                                ), // algunos nombres vienen con múltiples espacios
                                                 modifier = Modifier.padding(8.dp),
                                                 fontWeight = FontWeight.Bold,
                                                 maxLines = 3,
@@ -223,20 +240,20 @@ fun SearchScreen(
                                             Row(modifier = Modifier) {
                                                 Text(
                                                     text =
-                                                        getPriceWithCurrency(
-                                                            item,
-                                                            originalPrice = false,
-                                                        ),
+                                                    getPriceWithCurrency(
+                                                        item,
+                                                        originalPrice = false,
+                                                    ),
                                                     fontSize = 16.sp,
                                                     modifier = Modifier.padding(start = 8.dp),
                                                 )
                                                 if (item.original_price > 0) {
                                                     Text(
                                                         text =
-                                                            getPriceWithCurrency(
-                                                                item,
-                                                                originalPrice = true,
-                                                            ),
+                                                        getPriceWithCurrency(
+                                                            item,
+                                                            originalPrice = true,
+                                                        ),
                                                         fontSize = 14.sp,
                                                         modifier = Modifier.padding(start = 10.dp),
                                                         color = Color.Gray,
@@ -254,13 +271,17 @@ fun SearchScreen(
                             modifier = Modifier.fillMaxSize(),
                         ) {
                             Column(
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .verticalScroll(rememberScrollState())
                             ) {
                                 Spacer(modifier = Modifier.height(40.dp))
                                 Image(
                                     painter = painterResource(id = R.drawable.not_found),
                                     contentDescription = "No Results Found",
-                                    modifier = Modifier.size(150.dp).align(Alignment.CenterHorizontally),
+                                    modifier = Modifier
+                                        .size(150.dp)
+                                        .align(Alignment.CenterHorizontally),
                                 )
                                 Spacer(modifier = Modifier.height(40.dp))
                                 Text(

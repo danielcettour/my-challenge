@@ -1,16 +1,15 @@
 package com.cettourdev.challenge.search.data.network
 
-import com.cettourdev.challenge.core.network.RetrofitHelper
 import com.cettourdev.challenge.model.ItemResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class SearchService {
-    private val retrofit = RetrofitHelper.getRetrofit()
+class SearchService @Inject constructor(private val searchClient: SearchClient) {
 
     suspend fun doSearch(query: String): List<ItemResponse> =
         withContext(Dispatchers.IO) {
-            val response = retrofit.create(SearchClient::class.java).doSearch(query)
+            val response = searchClient.doSearch(query)
             response.body()?.results ?: listOf()
         }
 }

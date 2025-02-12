@@ -7,13 +7,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cettourdev.challenge.model.ItemResponse
 import com.cettourdev.challenge.search.domain.SearchUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SearchViewModel(
+@HiltViewModel
+class SearchViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
+    private val searchUseCase: SearchUseCase,
 ) : ViewModel() {
-    private val searchUseCase = SearchUseCase()
-
     private val _items = MutableLiveData<List<ItemResponse>>()
     val items: LiveData<List<ItemResponse>> = _items
 
