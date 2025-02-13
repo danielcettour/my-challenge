@@ -44,6 +44,7 @@ import com.cettourdev.challenge.utils.NetworkManager
 import com.cettourdev.challenge.utils.Utils.getPriceWithCurrency
 import com.cettourdev.challenge.utils.Utils.hideKeyboard
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -53,9 +54,11 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
     val searchResults by searchViewModel.items.observeAsState(emptyList())
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     val isLoading: Boolean by searchViewModel.isLoading.observeAsState(initial = false)
     val resultsNotmpty: Boolean by searchViewModel.resultsNotmpty.observeAsState(initial = true)
+    val resultError: Boolean by searchViewModel.resultsError.observeAsState(initial = false)
 
     Scaffold(
         snackbarHost = {
@@ -63,8 +66,7 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
                 val backgroundColor =
                     when (data.visuals.message) {
                         context.getString(R.string.revisa_tu_conexion_a_internet) -> Orange
-                        "Searching..." -> Color.Blue
-                        "Error occurred" -> Color.Red
+                        context.getString(R.string.error_inesperado) -> Color.Red
                         else -> Color.DarkGray
                     }
                 Snackbar(
@@ -176,7 +178,8 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
                                 }
                             }
                         }
-                    } else {
+                    }
+                    if (!resultsNotmpty) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                         ) {
@@ -217,10 +220,22 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
                             }
                         }
                     }
+                    if (resultError) {
+                        showSnackbarError(context, coroutineScope, snackbarHostState)
+                    }
                 }
             }
         },
     )
+}
+
+fun showSnackbarError(context: Context, coroutineScope: CoroutineScope, snackbarHostState: SnackbarHostState) {
+    coroutineScope.launch {
+        snackbarHostState.showSnackbar(
+            context.getString(R.string.error_inesperado),
+            duration = SnackbarDuration.Long,
+        )
+    }
 }
 
 @Composable
@@ -234,18 +249,13 @@ fun BusquedaOutlinedTextField(
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
-    var textState by rememberSaveable { mutableStateOf("") }
-
-    LaunchedEffect(searchQuery) {
-        textState = searchQuery
-    }
 
     OutlinedTextField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions =
         KeyboardActions(
             onSearch = {
-                if (textState.isBlank()) {
+                if (searchQuery.isBlank()) {
                     isError = true
                     return@KeyboardActions
                 }
@@ -295,7 +305,7 @@ fun BusquedaOutlinedTextField(
         shape = MaterialTheme.shapes.large,
         trailingIcon = {
             IconButton(onClick = {
-                if (textState.isBlank()) {
+                if (searchQuery.isBlank()) {
                     isError = true
                     return@IconButton
                 }

@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     kotlin("kapt")
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 android {
@@ -60,6 +62,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.okhttp.logging)
     implementation(libs.hilt.android)
+    implementation(libs.firebase.crashlytics)
     kapt(libs.hilt.compiler)
 
     testImplementation(libs.junit)

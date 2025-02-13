@@ -29,6 +29,9 @@ class SearchViewModel @Inject constructor(
     private val _resultsNotmpty = MutableLiveData<Boolean>()
     val resultsNotmpty: LiveData<Boolean> = _resultsNotmpty
 
+    private val _resultsError = MutableLiveData<Boolean>()
+    val resultsError: LiveData<Boolean> = _resultsError
+
     fun setearQuery(newQuery: String) {
         _query.value = newQuery
     }
@@ -43,11 +46,16 @@ class SearchViewModel @Inject constructor(
             _isLoading.value = true
             val result = query.value?.let { searchUseCase(it) }
 
-            if (!result.isNullOrEmpty()) {
-                _resultsNotmpty.value = true
-                _items.value = result ?: listOf()
+            if (result?.data == null && result?.message == "Error") {
+                _resultsError.value = true
             } else {
-                _resultsNotmpty.value = false
+                if (!result?.data?.results.isNullOrEmpty()) {
+                    _resultsError.value = false
+                    _resultsNotmpty.value = true
+                    _items.value = result?.data?.results ?: listOf()
+                } else {
+                    _resultsNotmpty.value = false
+                }
             }
             _isLoading.value = false
         }

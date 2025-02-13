@@ -4,12 +4,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import com.cettourdev.challenge.AlertDialogAyuda
@@ -47,6 +49,7 @@ class SearchScreenTest {
             supportingText.assertIsNotDisplayed()
             queryTextField.performTextClearance()
             queryTextField.performTextInput("Motorola")
+            queryTextField.assertIsFocused()
             queryTextField.assertTextContains("moto", substring = true, ignoreCase = true)
             supportingText.assertIsNotDisplayed()
             queryTextField.performTextClearance()
@@ -57,6 +60,10 @@ class SearchScreenTest {
             queryTextField.assertTextEquals("Samsung")
             searchAction.performClick()
             supportingText.assertIsNotDisplayed()
+            queryTextField.performTextClearance()
+            queryTextField.assertIsFocused()
+            queryTextField.performImeAction() // performImeAction -> click en ícono de lupa del soft keyboard
+            supportingText.assertIsDisplayed()
         }
     }
 
