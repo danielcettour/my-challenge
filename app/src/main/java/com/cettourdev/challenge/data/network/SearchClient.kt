@@ -1,4 +1,4 @@
-package com.cettourdev.challenge.search.data.network
+package com.cettourdev.challenge.data.network
 
 import com.cettourdev.challenge.model.SearchResponse
 import retrofit2.Response

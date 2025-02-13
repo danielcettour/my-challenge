@@ -1,4 +1,4 @@
-package com.cettourdev.challenge.search.ui
+package com.cettourdev.challenge.screens.search
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -23,7 +23,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,28 +48,14 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SearchScreen(
-    context: Context,
-    searchViewModel: SearchViewModel,
-    navController: NavController,
-) {
-    // var searchQuery by rememberSaveable { mutableStateOf("") }
-    // val searchQuery by searchViewModel.query.observeAsState("")
-    var textState by rememberSaveable { mutableStateOf("") }
-    var isError by rememberSaveable { mutableStateOf(false) }
+fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navController: NavController) {
     val searchQuery by searchViewModel.query.observeAsState("")
     val searchResults by searchViewModel.items.observeAsState(emptyList())
 
-    val snackbarHostState = remember { SnackbarHostState() } // Snackbar state
-    val coroutineScope = rememberCoroutineScope() // Coroutine scope
-    val focusManager = LocalFocusManager.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val isLoading: Boolean by searchViewModel.isLoading.observeAsState(initial = false)
     val resultsNotmpty: Boolean by searchViewModel.resultsNotmpty.observeAsState(initial = true)
-
-    LaunchedEffect(searchQuery) {
-        textState = searchQuery
-    }
 
     Scaffold(
         snackbarHost = {
@@ -87,103 +75,23 @@ fun SearchScreen(
             }
         },
         content = {
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .background(LightGray)) {
-                OutlinedTextField(
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions =
-                    KeyboardActions(
-                        onSearch = {
-                            if (textState.isBlank()) {
-                                isError = true
-                                return@KeyboardActions
-                            }
-                            isError = false
-                            hideKeyboard(context, focusManager)
-                            val isConnected = NetworkManager.isConnected(context)
-
-                            coroutineScope.launch {
-                                if (isConnected) {
-                                    searchViewModel.onSearch()
-                                } else {
-                                    snackbarHostState.showSnackbar(
-                                        context.getString(R.string.revisa_tu_conexion_a_internet),
-                                        duration = SnackbarDuration.Short,
-                                    )
-                                }
-                            }
-                        },
-                    ),
-                    colors =
-                    OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedLabelColor = Color.DarkGray,
-                        unfocusedLabelColor = Color.Gray,
-                        focusedBorderColor = Color.Gray,
-                        unfocusedBorderColor = Color.Gray,
-                        cursorColor = Color.Gray,
-                    ),
-                    value = textState,
-                    onValueChange = {
-                        textState = it
-                        searchViewModel.onQueryChanged(it)
-                    },
-                    label = {
-                        Text(
-                            stringResource(
-                                R.string.buscar_productos_y_mas,
-                            ),
-                            color = Color.Gray,
-                            modifier = Modifier.background(Color.Transparent),
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 10.dp, end = 10.dp, top = 10.dp),
-                    singleLine = true,
-                    isError = isError,
-                    shape = MaterialTheme.shapes.large,
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            if (textState.isBlank()) {
-                                isError = true
-                                return@IconButton
-                            }
-                            isError = false
-                            val isConnected = NetworkManager.isConnected(context)
-                            hideKeyboard(context, focusManager)
-
-                            coroutineScope.launch {
-                                if (isConnected) {
-                                    searchViewModel.onSearch()
-                                } else {
-                                    snackbarHostState.showSnackbar(
-                                        context.getString(R.string.revisa_tu_conexion_a_internet),
-                                        duration = SnackbarDuration.Short,
-                                    )
-                                }
-                            }
-                        }) {
-                            Icon(imageVector = Icons.Filled.Search, contentDescription = "Search")
-                        }
-                    },
-                    supportingText = {
-                        if (isError) {
-                            Text(
-                                text = "Campo requerido",
-                                color = Color.Red,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                    },
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(LightGray)
+            ) {
+                BusquedaOutlinedTextField(
+                    searchQuery,
+                    onQueryChanged = { q -> searchViewModel.setearQuery(q) },
+                    onSearch = { searchViewModel.onSearch() },
+                    snackbarHostState
                 )
-
                 if (isLoading) {
-                    Box(Modifier
-                        .fillMaxSize()
-                        .align(Alignment.CenterHorizontally)) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .align(Alignment.CenterHorizontally)
+                    ) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
                             color = Color.DarkGray
@@ -216,9 +124,11 @@ fun SearchScreen(
                                     shape = MaterialTheme.shapes.medium,
                                     border = BorderStroke(width = 1.dp, Color.LightGray),
                                 ) {
-                                    Row(modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(Color.White)) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.White)
+                                    ) {
                                         LoadImage(
                                             item.thumbnail.replace("http://", "https://"),
                                             Modifier
@@ -308,6 +218,113 @@ fun SearchScreen(
                         }
                     }
                 }
+            }
+        },
+    )
+}
+
+@Composable
+fun BusquedaOutlinedTextField(
+    searchQuery: String,
+    onQueryChanged: (String) -> Unit,
+    onSearch: () -> Unit,
+    snackbarHostState: SnackbarHostState
+) {
+    var isError by rememberSaveable { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    var textState by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(searchQuery) {
+        textState = searchQuery
+    }
+
+    OutlinedTextField(
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions =
+        KeyboardActions(
+            onSearch = {
+                if (textState.isBlank()) {
+                    isError = true
+                    return@KeyboardActions
+                }
+                isError = false
+                hideKeyboard(context, focusManager)
+                val isConnected = NetworkManager.isConnected(context)
+
+                coroutineScope.launch {
+                    if (isConnected) {
+                        onSearch()
+                    } else {
+                        snackbarHostState.showSnackbar(
+                            context.getString(R.string.revisa_tu_conexion_a_internet),
+                            duration = SnackbarDuration.Short,
+                        )
+                    }
+                }
+            },
+        ),
+        colors =
+        OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedLabelColor = Color.DarkGray,
+            unfocusedLabelColor = Color.Gray,
+            focusedBorderColor = Color.Gray,
+            unfocusedBorderColor = Color.Gray,
+            cursorColor = Color.Gray,
+        ),
+        value = searchQuery,
+        onValueChange = { q -> onQueryChanged(q) },
+        label = {
+            Text(
+                stringResource(
+                    R.string.buscar_productos_y_mas,
+                ),
+                color = Color.Gray,
+                modifier = Modifier.background(Color.Transparent),
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 10.dp, end = 10.dp, top = 10.dp)
+            .testTag("campoBusquedaTag"),
+        singleLine = true,
+        isError = isError,
+        shape = MaterialTheme.shapes.large,
+        trailingIcon = {
+            IconButton(onClick = {
+                if (textState.isBlank()) {
+                    isError = true
+                    return@IconButton
+                }
+                isError = false
+                val isConnected = NetworkManager.isConnected(context)
+                hideKeyboard(context, focusManager)
+
+                coroutineScope.launch {
+                    if (isConnected) {
+                        onSearch()
+                    } else {
+                        snackbarHostState.showSnackbar(
+                            context.getString(R.string.revisa_tu_conexion_a_internet),
+                            duration = SnackbarDuration.Short,
+                        )
+                    }
+                }
+            }, modifier = Modifier.testTag("performSearchIcon")) {
+                Icon(imageVector = Icons.Filled.Search, contentDescription = "Search")
+            }
+        },
+        supportingText = {
+            if (isError) {
+                Text(
+                    text = "Campo requerido",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("supportingTextTag")
+                )
             }
         },
     )

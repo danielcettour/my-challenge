@@ -1,4 +1,4 @@
-package com.cettourdev.challenge.search.ui
+package com.cettourdev.challenge.screens.search
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -121,9 +121,7 @@ fun DetailsScreen(
                     .padding(start = 16.dp, end = 16.dp)
                     .verticalScroll(rememberScrollState()),
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 if (item.attributes.isNotEmpty()) {
                     Column {

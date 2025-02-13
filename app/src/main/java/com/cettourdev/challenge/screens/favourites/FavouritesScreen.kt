@@ -1,4 +1,4 @@
-package com.cettourdev.challenge.favourites
+package com.cettourdev.challenge.screens.favourites
 
 import android.content.Context
 import androidx.compose.foundation.layout.Column
@@ -11,7 +11,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun FavouritesScreen(context: Context) {
-    Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(8.dp)) {
         Text("Favoritos")
     }
 }

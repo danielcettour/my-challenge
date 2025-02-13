@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,14 +39,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,15 +55,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.cettourdev.challenge.favourites.FavouritesScreen
-import com.cettourdev.challenge.search.ui.DetailsScreen
-import com.cettourdev.challenge.search.ui.SearchScreen
-import com.cettourdev.challenge.search.ui.SearchViewModel
+import com.cettourdev.challenge.screens.favourites.FavouritesScreen
+import com.cettourdev.challenge.screens.search.DetailsScreen
+import com.cettourdev.challenge.screens.search.SearchScreen
+import com.cettourdev.challenge.screens.search.SearchViewModel
 import com.cettourdev.challenge.ui.theme.ChallengeTheme
 import com.cettourdev.challenge.ui.theme.LightYellow
 import com.cettourdev.challenge.ui.theme.YellowPrimary
 import com.cettourdev.challenge.ui.theme.customColorScheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -84,7 +85,6 @@ class MainActivity : ComponentActivity() {
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     innerPadding: PaddingValues,
@@ -93,7 +93,9 @@ fun MainScreen(
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
-    var showDialog by remember { mutableStateOf(false) }
+    //var showDialog by remember { mutableStateOf(false) }
+    val showDialog: Boolean by searchViewModel.dialogVisible.observeAsState(initial = false)
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
@@ -163,40 +165,19 @@ fun MainScreen(
         ) {
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                "",
-                                fontSize = MaterialTheme.typography.titleLarge.fontSize
-                            )
-                        },
-                        colors =
-                        TopAppBarDefaults.topAppBarColors(
-                            containerColor = YellowPrimary,
-                            titleContentColor = Color.Black,
-                        ),
-                        navigationIcon = {
-                            IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
-                                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { showDialog = true }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                                    contentDescription = "Ayuda"
-                                )
-                            }
-                        },
+                    MyTopBar(
+                        coroutineScope,
+                        drawerState,
+                        onVisibilityChanged = { visible -> searchViewModel.setearDialogVisibility(visible) }
                     )
                 },
             ) {
                 Surface(
-                    modifier =
-                    Modifier
+                    modifier = Modifier
                         .fillMaxSize()
-                        .padding(it),
-                ) {
+                        .padding(it)
+                )
+                {
                     NavHost(
                         navController = navController,
                         startDestination = "search",
@@ -219,24 +200,61 @@ fun MainScreen(
                         }
                     }
                 }
-                if (showDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDialog = false },
-                        confirmButton = {
-                            TextButton(onClick = { showDialog = false }) {
-                                Text("Aceptar", color = Color.DarkGray, fontSize = 16.sp)
-                            }
-                        },
-                        title = { Text("¿Cómo funciona?") },
-                        text = {
-                            Text(
-                                "Buscá los artículos desde la barra de búsqueda. Pulsá sobre un ítem para ver más detalles. Podés agregar tus productos a favoritos!",
-                                fontSize = 16.sp,
-                            )
-                        },
-                    )
-                }
+                AlertDialogAyuda(
+                    showDialog,
+                    onVisibilityChanged = { visible ->
+                        searchViewModel.setearDialogVisibility(visible)
+                    }
+                )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyTopBar(
+    coroutineScope: CoroutineScope?,
+    drawerState: DrawerState?,
+    onVisibilityChanged: (Boolean) -> Unit,
+) {
+    TopAppBar(
+        title = { Text("", fontSize = MaterialTheme.typography.titleLarge.fontSize) },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = YellowPrimary, titleContentColor = Color.Black),
+        navigationIcon = {
+            IconButton(onClick = { coroutineScope?.launch { drawerState?.open() } }) {
+                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
+            }
+        },
+        actions = {
+            IconButton(
+                onClick = { onVisibilityChanged(true) },
+                modifier = Modifier.testTag("iconoAyudaTag")
+            ) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.HelpOutline, contentDescription = "Ayuda")
+            }
+        },
+    )
+}
+
+@Composable
+fun AlertDialogAyuda(showDialog: Boolean, onVisibilityChanged: (Boolean) -> Unit) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { onVisibilityChanged(false) },
+            confirmButton = {
+                TextButton(onClick = { onVisibilityChanged(false) }, modifier = Modifier.testTag("aceptarButtonTag")) {
+                    Text("Aceptar", color = Color.DarkGray, fontSize = 16.sp)
+                }
+            },
+            title = { Text("¿Cómo funciona?") },
+            text = {
+                Text(
+                    "Buscá los artículos desde la barra de búsqueda. Pulsá sobre un ítem para ver más detalles. Podés agregar tus productos a favoritos!",
+                    fontSize = 16.sp,
+                )
+            },
+            modifier = Modifier.testTag("dialogAyudaTag")
+        )
     }
 }

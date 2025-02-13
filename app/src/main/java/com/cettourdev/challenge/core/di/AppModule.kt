@@ -1,7 +1,7 @@
 package com.cettourdev.challenge.core.di
 
 import com.cettourdev.challenge.core.network.RetrofitHelper.client
-import com.cettourdev.challenge.search.data.network.SearchClient
+import com.cettourdev.challenge.data.network.SearchClient
 import com.cettourdev.challenge.utils.Utils.BASE_URL
 import dagger.Module
 import dagger.Provides

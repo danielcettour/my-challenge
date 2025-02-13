@@ -1,19 +1,17 @@
-package com.cettourdev.challenge.search.ui
+package com.cettourdev.challenge.screens.search
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cettourdev.challenge.model.ItemResponse
-import com.cettourdev.challenge.search.domain.SearchUseCase
+import com.cettourdev.challenge.domain.SearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
     private val searchUseCase: SearchUseCase,
 ) : ViewModel() {
     private val _items = MutableLiveData<List<ItemResponse>>()
@@ -22,18 +20,21 @@ class SearchViewModel @Inject constructor(
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
+    private val _dialogVisible = MutableLiveData<Boolean>()
+    val dialogVisible: LiveData<Boolean> = _dialogVisible
+
+    private val _query = MutableLiveData<String>()
+    val query: LiveData<String> = _query
+
     private val _resultsNotmpty = MutableLiveData<Boolean>()
     val resultsNotmpty: LiveData<Boolean> = _resultsNotmpty
 
-    companion object {
-        private const val QUERY_KEY = "search_query"
+    fun setearQuery(newQuery: String) {
+        _query.value = newQuery
     }
 
-    // Para mantener el valor al rotar la pantalla
-    val query = savedStateHandle.getLiveData<String>(QUERY_KEY, "")
-
-    fun onQueryChanged(newQuery: String) {
-        savedStateHandle[QUERY_KEY] = newQuery
+    fun setearDialogVisibility(visibility: Boolean) {
+        _dialogVisible.value = visibility
     }
 
     fun onSearch() {
