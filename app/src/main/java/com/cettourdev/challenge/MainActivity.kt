@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -63,6 +64,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cettourdev.challenge.screens.about.AboutScreen
 import com.cettourdev.challenge.screens.details.WebViewScreen
 import com.cettourdev.challenge.screens.favourites.FavouritesScreen
 import com.cettourdev.challenge.screens.details.DetailsScreen
@@ -125,8 +127,7 @@ fun MainScreen(
             drawerContent = {
                 ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
                     Box(
-                        modifier =
-                        Modifier
+                        modifier = Modifier
                             .fillMaxWidth()
                             .padding(30.dp),
                         contentAlignment = Alignment.Center,
@@ -139,17 +140,13 @@ fun MainScreen(
                         )
                     }
                     NavigationDrawerItem(
-                        colors =
-                        NavigationDrawerItemDefaults.colors(
+                        colors = NavigationDrawerItemDefaults.colors(
                             selectedContainerColor = LightYellow,
                             selectedTextColor = Color.Black,
                             selectedIconColor = Color.Black,
                         ),
                         icon = {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = "Buscar"
-                            )
+                            Icon(imageVector = Icons.Filled.Search, contentDescription = "Buscar")
                         },
                         label = { Text(stringResource(R.string.buscar)) },
                         selected = currentRoute == "search",
@@ -159,23 +156,35 @@ fun MainScreen(
                         },
                     )
                     NavigationDrawerItem(
-                        colors =
-                        NavigationDrawerItemDefaults.colors(
+                        colors = NavigationDrawerItemDefaults.colors(
                             selectedContainerColor = LightYellow,
                             selectedTextColor = Color.Black,
                             selectedIconColor = Color.Black,
                         ),
                         icon = {
-                            Icon(
-                                imageVector = Icons.Filled.Favorite,
-                                contentDescription = "Favoritos"
-                            )
+                            Icon(imageVector = Icons.Filled.Favorite, contentDescription = "Favoritos")
                         },
                         label = { Text(stringResource(R.string.favoritos)) },
                         selected = currentRoute == "favourites",
                         onClick = {
                             coroutineScope.launch { drawerState.close() }
                             navController.navigate("favourites")
+                        },
+                    )
+                    NavigationDrawerItem(
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = LightYellow,
+                            selectedTextColor = Color.Black,
+                            selectedIconColor = Color.Black,
+                        ),
+                        icon = {
+                            Icon(imageVector = Icons.Filled.Info, contentDescription = "Acerca de")
+                        },
+                        label = { Text("Acerca de") },
+                        selected = currentRoute == "about",
+                        onClick = {
+                            coroutineScope.launch { drawerState.close() }
+                            navController.navigate("about")
                         },
                     )
                 }
@@ -195,25 +204,16 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(it)
-                )
-                {
+                ) {
                     NavHost(
                         navController = navController,
                         startDestination = "search",
                     ) {
                         composable("search") {
-                            SearchScreen(
-                                context = context,
-                                searchViewModel = searchViewModel,
-                                navController = navController
-                            )
+                            SearchScreen(context = context, searchViewModel = searchViewModel, navController = navController)
                         }
                         composable("favourites") {
-                            FavouritesScreen(
-                                context = context,
-                                favouritesViewModel = favouritesViewModel,
-                                navController = navController
-                            )
+                            FavouritesScreen(context = context, favouritesViewModel = favouritesViewModel, navController = navController)
                         }
                         composable(
                             "details/{itemJson}",
@@ -234,8 +234,10 @@ fun MainScreen(
                             val permalink = backStackEntry.arguments?.getString("permalink")?.let { Uri.decode(it) } ?: ""
                             WebViewScreen(permalink)
                         }
+                        composable("about") {
+                            AboutScreen()
+                        }
                     }
-
                 }
                 AlertDialogAyuda(
                     showDialog,
