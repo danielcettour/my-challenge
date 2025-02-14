@@ -1,19 +1,23 @@
 package com.cettourdev.challenge
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Favorite
@@ -40,21 +44,26 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cettourdev.challenge.screens.details.WebViewScreen
 import com.cettourdev.challenge.screens.favourites.FavouritesScreen
 import com.cettourdev.challenge.screens.search.DetailsScreen
 import com.cettourdev.challenge.screens.search.SearchScreen
@@ -93,17 +102,20 @@ fun MainScreen(
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
-    //var showDialog by remember { mutableStateOf(false) }
     val showDialog: Boolean by searchViewModel.dialogVisible.observeAsState(initial = false)
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
 
+    // en la webview de detalles, se deshabilitan los gestos del menú para que no interfieran con el scroll
+    val gesturesEnabled = remember { mutableStateOf(true) }
+    gesturesEnabled.value = currentRoute != "webview/{permalink}"
+
     MaterialTheme(colorScheme = customColorScheme) {
         ModalNavigationDrawer(
             drawerState = drawerState,
-            gesturesEnabled = true,
+            gesturesEnabled = gesturesEnabled.value,
             drawerContent = {
                 ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
                     Box(
@@ -166,6 +178,7 @@ fun MainScreen(
             Scaffold(
                 topBar = {
                     MyTopBar(
+                        navController,
                         coroutineScope,
                         drawerState,
                         onVisibilityChanged = { visible -> searchViewModel.setearDialogVisibility(visible) }
@@ -192,13 +205,23 @@ fun MainScreen(
                             "details/{itemJson}",
                             arguments = listOf(navArgument("itemJson") {
                                 type = NavType.StringType
-                            }),
+                            })
                         ) { backStackEntry ->
                             backStackEntry.arguments?.getString("itemJson")?.let { itemJson ->
-                                DetailsScreen(itemJson, context)
+                                DetailsScreen(itemJson, navController)
                             }
                         }
+                        composable(
+                            "webview/{permalink}",
+                            arguments = listOf(navArgument("permalink") {
+                                type = NavType.StringType
+                            })
+                        ) { backStackEntry ->
+                            val permalink = backStackEntry.arguments?.getString("permalink")?.let { Uri.decode(it) } ?: ""
+                            WebViewScreen(permalink)
+                        }
                     }
+
                 }
                 AlertDialogAyuda(
                     showDialog,
@@ -214,16 +237,41 @@ fun MainScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTopBar(
+    navController: NavController,
     coroutineScope: CoroutineScope?,
     drawerState: DrawerState?,
     onVisibilityChanged: (Boolean) -> Unit,
 ) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     TopAppBar(
-        title = { Text("", fontSize = MaterialTheme.typography.titleLarge.fontSize) },
+        title = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp), contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.meli_logo),
+                    contentDescription = "Logo empresa",
+                    modifier = Modifier
+                        .size(50.dp)
+                )
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = YellowPrimary, titleContentColor = Color.Black),
         navigationIcon = {
-            IconButton(onClick = { coroutineScope?.launch { drawerState?.open() } }) {
-                Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
+            if (currentRoute == "webview/{permalink}") {
+                // Se muestra la flecha hacia atrás en el webview
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
+            } else {
+                // Se muestra el ícono de menú hamburguesa en el resto de pantallas
+                IconButton(onClick = { coroutineScope?.launch { drawerState?.open() } }) {
+                    Icon(imageVector = Icons.Filled.Menu, contentDescription = "Menu")
+                }
             }
         },
         actions = {

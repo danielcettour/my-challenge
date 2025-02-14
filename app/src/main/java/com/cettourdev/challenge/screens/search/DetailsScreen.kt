@@ -1,8 +1,6 @@
 package com.cettourdev.challenge.screens.search
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.util.Base64
 import androidx.compose.foundation.background
@@ -35,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.cettourdev.challenge.model.ItemResponse
 import com.cettourdev.challenge.ui.theme.LightGray
 import com.cettourdev.challenge.ui.theme.YellowPrimary
@@ -46,7 +45,7 @@ import com.google.gson.Gson
 @Composable
 fun DetailsScreen(
     itemJson: String,
-    context: Context,
+    navController: NavController,
 ) {
     val decodedJson =
         String(Base64.decode(itemJson, Base64.URL_SAFE or Base64.NO_WRAP), Charsets.UTF_8)
@@ -54,11 +53,13 @@ fun DetailsScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(containerColor = YellowPrimary, onClick = {
-                val uri = Uri.parse(item.permalink)
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                context.startActivity(intent)
-            }) {
+            FloatingActionButton(
+                containerColor = YellowPrimary,
+                onClick = {
+                    val permalink = Uri.encode(item.permalink)
+                    navController.navigate("webview/$permalink")
+
+                }) {
                 Icon(imageVector = Icons.Outlined.Info, contentDescription = "Más detalles")
             }
         },
