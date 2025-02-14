@@ -52,6 +52,7 @@ import com.cettourdev.challenge.model.ItemResponse
 import com.cettourdev.challenge.ui.theme.FavouriteBlue
 import com.cettourdev.challenge.ui.theme.LightGray
 import com.cettourdev.challenge.ui.theme.Orange
+import com.cettourdev.challenge.ui.theme.SnackbarSuccess
 import com.cettourdev.challenge.ui.theme.YellowPrimary
 import com.cettourdev.challenge.utils.LoadImage
 import com.cettourdev.challenge.utils.NetworkManager
@@ -83,6 +84,7 @@ fun DetailsScreen(
             SnackbarHost(snackbarHostState) { data ->
                 val backgroundColor =
                     when (data.visuals.message) {
+                        context.getString(R.string.se_agrego_a_tu_lista_de_favoritos) -> SnackbarSuccess
                         context.getString(R.string.revisa_tu_conexion_a_internet) -> Orange
                         context.getString(R.string.error_inesperado) -> Color.Red
                         else -> Color.DarkGray
@@ -160,7 +162,7 @@ fun DetailsScreen(
                             .align(Alignment.TopEnd)
                             .padding(end = 18.dp)
                     ) {
-                        FavouriteIcon(item, detailsViewModel)
+                        FavouriteIcon(item, detailsViewModel, snackbarHostState)
                     }
                 }
 
@@ -226,8 +228,7 @@ fun DetailsScreen(
                                             .weight(1f)
                                             .padding(4.dp),
                                         lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-
-                                        )
+                                    )
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
@@ -240,18 +241,31 @@ fun DetailsScreen(
 }
 
 @Composable
-fun FavouriteIcon(item: ItemResponse, detailsViewModel: DetailsViewModel) {
+fun FavouriteIcon(
+    item: ItemResponse,
+    detailsViewModel: DetailsViewModel,
+    snackbarHostState: SnackbarHostState
+) {
     val isFavourite by detailsViewModel.isFavourite.observeAsState(false)
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Icon(
         imageVector = if (isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
         contentDescription = "Favorite",
         tint = if (isFavourite) FavouriteBlue else Color.Gray,
-
         modifier = Modifier
             .size(30.dp)
             .clickable {
                 detailsViewModel.toggleFavourite(item)
+                coroutineScope.launch {
+                    val message = if (isFavourite) {
+                        context.getString(R.string.se_agrego_a_tu_lista_de_favoritos)
+                    } else {
+                        context.getString(R.string.se_elimino_de_tu_lista_de_favoritos)
+                    }
+                    snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+                }
             }
     )
 }
