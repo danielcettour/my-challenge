@@ -26,34 +26,45 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.cettourdev.challenge.R
 import com.cettourdev.challenge.model.ItemResponse
 import com.cettourdev.challenge.ui.theme.FavouriteBlue
 import com.cettourdev.challenge.ui.theme.LightGray
+import com.cettourdev.challenge.ui.theme.Orange
 import com.cettourdev.challenge.ui.theme.YellowPrimary
 import com.cettourdev.challenge.utils.LoadImage
+import com.cettourdev.challenge.utils.NetworkManager
 import com.cettourdev.challenge.utils.Utils.getPriceWithCurrency
 import com.google.gson.Gson
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DetailsScreen(
     itemJson: String,
     detailsViewModel: DetailsViewModel,
-    navController: NavController
+    navController: NavController,
 ) {
     val decodedJson =
         String(Base64.decode(itemJson, Base64.URL_SAFE or Base64.NO_WRAP), Charsets.UTF_8)
@@ -63,13 +74,42 @@ fun DetailsScreen(
     val isLoading: Boolean by detailsViewModel.isLoading.observeAsState(initial = false)
     val items by detailsViewModel.items.collectAsState()
 
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                val backgroundColor =
+                    when (data.visuals.message) {
+                        context.getString(R.string.revisa_tu_conexion_a_internet) -> Orange
+                        context.getString(R.string.error_inesperado) -> Color.Red
+                        else -> Color.DarkGray
+                    }
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = backgroundColor,
+                    contentColor = Color.White,
+                )
+            }
+        },
         floatingActionButton = {
             FloatingActionButton(
                 containerColor = YellowPrimary,
                 onClick = {
                     val permalink = Uri.encode(item.permalink)
-                    navController.navigate("webview/$permalink")
+                    val isConnected = NetworkManager.isConnected(context)
+                    coroutineScope.launch {
+                        if (isConnected) {
+                            navController.navigate("webview/$permalink")
+                        } else {
+                            snackbarHostState.showSnackbar(
+                                context.getString(R.string.revisa_tu_conexion_a_internet),
+                                duration = SnackbarDuration.Short,
+                            )
+                        }
+                    }
 
                 }) {
                 Icon(imageVector = Icons.Outlined.Info, contentDescription = "Más detalles")
