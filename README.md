@@ -9,7 +9,7 @@ Para el desarrollo se utilizó:
 - Room para el manejo de datos locales
 - Firebase Crashlytics para seguimiento de errores
 
-![image](https://github.com/user-attachments/assets/3aa90741-bbaa-4121-9a83-ec5a8bcdaa70)
+![image](https://github.com/user-attachments/assets/359c9e42-8cd1-4ad4-a8ea-45621a6b59bf)
 
 ![image](https://github.com/user-attachments/assets/0e059f98-ca43-4f50-9a75-51e93430e9ca)
 
