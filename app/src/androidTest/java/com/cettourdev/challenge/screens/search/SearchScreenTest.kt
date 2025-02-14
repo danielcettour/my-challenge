@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.navigation.compose.rememberNavController
 import com.cettourdev.challenge.AlertDialogAyuda
 import com.cettourdev.challenge.MyTopBar
 import org.junit.Rule
@@ -73,8 +74,9 @@ class SearchScreenTest {
         with(composeTestRule) {
             this.setContent {
                 val displayed = remember { mutableStateOf(false) }
+                val navController = rememberNavController()
 
-                MyTopBar(null, null, onVisibilityChanged = { displayed.value = it })
+                MyTopBar(navController, null, null, onVisibilityChanged = { displayed.value = it })
                 AlertDialogAyuda(displayed.value, onVisibilityChanged = { displayed.value = it })
             }
             composeTestRule.waitForIdle()

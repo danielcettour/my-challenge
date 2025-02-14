@@ -2,6 +2,7 @@ package com.cettourdev.challenge.screens.search
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.util.Base64
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -9,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +18,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -52,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -88,7 +92,7 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
     val coroutineScope = rememberCoroutineScope()
 
     val isLoading: Boolean by searchViewModel.isLoading.observeAsState(initial = false)
-    val resultsNotmpty: Boolean by searchViewModel.resultsNotmpty.observeAsState(initial = true)
+    val resultsNotEmpty: Boolean by searchViewModel.resultsNotEmpty.observeAsState(initial = true)
     val resultError: Boolean by searchViewModel.resultsError.observeAsState(initial = false)
 
     Scaffold(
@@ -131,26 +135,28 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
                         )
                     }
                 } else {
-                    if (resultsNotmpty) {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    if (resultsNotEmpty) {
+                        // para portrait se muestra un ítem por fila
+                        // para landscape se muestran 2 ítems por fila
+                        val configuration = LocalConfiguration.current
+                        val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                        val columns = if (isLandscape) 2 else 1
+
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(columns),
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
+                        ) {
                             items(searchResults) { item ->
                                 Card(
-                                    modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(
-                                            start = 12.dp,
-                                            end = 12.dp,
-                                            top = 6.dp,
-                                            bottom = 6.dp,
-                                        )
+                                    modifier = Modifier
+                                        .padding(4.dp)
                                         .clickable {
                                             val itemJson = Gson().toJson(item)
-                                            val encodedJson =
-                                                Base64.encodeToString(
-                                                    itemJson.toByteArray(Charsets.UTF_8),
-                                                    Base64.URL_SAFE or Base64.NO_WRAP,
-                                                )
+                                            val encodedJson = Base64.encodeToString(
+                                                itemJson.toByteArray(Charsets.UTF_8),
+                                                Base64.URL_SAFE or Base64.NO_WRAP,
+                                            )
                                             navController.navigate("details/$encodedJson")
                                         },
                                     elevation = CardDefaults.elevatedCardElevation(4.dp),
@@ -166,37 +172,26 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
                                             item.thumbnail.replace("http://", "https://"),
                                             Modifier
                                                 .size(100.dp, 100.dp)
-                                                .padding(top = 8.dp, bottom = 8.dp),
+                                                .padding(vertical = 8.dp),
                                         )
                                         Column {
                                             Text(
-                                                text = item.title.trim().replace(
-                                                    "\\s+".toRegex(),
-                                                    " "
-                                                ), // algunos nombres vienen con múltiples espacios
+                                                text = item.title.trim().replace("\\s+".toRegex(), " "),
                                                 modifier = Modifier.padding(8.dp),
                                                 fontWeight = FontWeight.Bold,
                                                 maxLines = 3,
                                                 overflow = TextOverflow.Ellipsis,
                                                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                                             )
-                                            Row(modifier = Modifier) {
+                                            Row {
                                                 Text(
-                                                    text =
-                                                    getPriceWithCurrency(
-                                                        item,
-                                                        originalPrice = false,
-                                                    ),
+                                                    text = getPriceWithCurrency(item, originalPrice = false),
                                                     fontSize = 16.sp,
                                                     modifier = Modifier.padding(start = 8.dp),
                                                 )
                                                 if (item.original_price > 0) {
                                                     Text(
-                                                        text =
-                                                        getPriceWithCurrency(
-                                                            item,
-                                                            originalPrice = true,
-                                                        ),
+                                                        text = getPriceWithCurrency(item, originalPrice = true),
                                                         fontSize = 14.sp,
                                                         modifier = Modifier.padding(start = 10.dp),
                                                         color = Color.Gray,
@@ -210,9 +205,12 @@ fun SearchScreen(context: Context, searchViewModel: SearchViewModel, navControll
                             }
                         }
                     }
-                    if (!resultsNotmpty) {
+
+                    if (!resultsNotEmpty) {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
                             Column(
                                 modifier = Modifier
@@ -374,7 +372,7 @@ fun BusquedaOutlinedTextField(
         supportingText = {
             if (isError) {
                 Text(
-                    text = "Campo requerido",
+                    text = "Dato requerido",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.testTag("supportingTextTag")

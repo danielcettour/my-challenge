@@ -65,7 +65,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cettourdev.challenge.screens.details.WebViewScreen
 import com.cettourdev.challenge.screens.favourites.FavouritesScreen
-import com.cettourdev.challenge.screens.search.DetailsScreen
+import com.cettourdev.challenge.screens.details.DetailsScreen
+import com.cettourdev.challenge.screens.details.DetailsViewModel
+import com.cettourdev.challenge.screens.favourites.FavouritesViewModel
 import com.cettourdev.challenge.screens.search.SearchScreen
 import com.cettourdev.challenge.screens.search.SearchViewModel
 import com.cettourdev.challenge.ui.theme.ChallengeTheme
@@ -79,6 +81,8 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val searchViewModel: SearchViewModel by viewModels()
+    private val detailsViewModel: DetailsViewModel by viewModels()
+    private val favouritesViewModel: FavouritesViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,7 +90,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ChallengeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainScreen(innerPadding, searchViewModel)
+                    MainScreen(innerPadding, searchViewModel, detailsViewModel, favouritesViewModel)
                 }
             }
         }
@@ -98,6 +102,8 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(
     innerPadding: PaddingValues,
     searchViewModel: SearchViewModel,
+    detailsViewModel: DetailsViewModel,
+    favouritesViewModel: FavouritesViewModel
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -196,10 +202,18 @@ fun MainScreen(
                         startDestination = "search",
                     ) {
                         composable("search") {
-                            SearchScreen(context = context, searchViewModel, navController)
+                            SearchScreen(
+                                context = context,
+                                searchViewModel = searchViewModel,
+                                navController = navController
+                            )
                         }
                         composable("favourites") {
-                            FavouritesScreen(context = context)
+                            FavouritesScreen(
+                                context = context,
+                                favouritesViewModel = favouritesViewModel,
+                                navController = navController
+                            )
                         }
                         composable(
                             "details/{itemJson}",
@@ -208,7 +222,7 @@ fun MainScreen(
                             })
                         ) { backStackEntry ->
                             backStackEntry.arguments?.getString("itemJson")?.let { itemJson ->
-                                DetailsScreen(itemJson, navController)
+                                DetailsScreen(itemJson, detailsViewModel, navController)
                             }
                         }
                         composable(
@@ -262,8 +276,8 @@ fun MyTopBar(
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = YellowPrimary, titleContentColor = Color.Black),
         navigationIcon = {
-            if (currentRoute == "webview/{permalink}") {
-                // Se muestra la flecha hacia atrás en el webview
+            if (currentRoute == "webview/{permalink}" || currentRoute == "details/{itemJson}") {
+                // Se muestra la flecha hacia atrás en pantalla de detalle y webview
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }

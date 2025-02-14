@@ -26,8 +26,8 @@ class SearchViewModel @Inject constructor(
     private val _query = MutableLiveData<String>()
     val query: LiveData<String> = _query
 
-    private val _resultsNotmpty = MutableLiveData<Boolean>()
-    val resultsNotmpty: LiveData<Boolean> = _resultsNotmpty
+    private val _resultsNotEmpty = MutableLiveData<Boolean>()
+    val resultsNotEmpty: LiveData<Boolean> = _resultsNotEmpty
 
     private val _resultsError = MutableLiveData<Boolean>()
     val resultsError: LiveData<Boolean> = _resultsError
@@ -51,10 +51,10 @@ class SearchViewModel @Inject constructor(
             } else {
                 if (!result?.data?.results.isNullOrEmpty()) {
                     _resultsError.value = false
-                    _resultsNotmpty.value = true
+                    _resultsNotEmpty.value = true
                     _items.value = result?.data?.results ?: listOf()
                 } else {
-                    _resultsNotmpty.value = false
+                    _resultsNotEmpty.value = false
                 }
             }
             _isLoading.value = false

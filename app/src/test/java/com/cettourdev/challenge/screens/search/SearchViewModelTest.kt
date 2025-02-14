@@ -53,7 +53,7 @@ class SearchViewModelTest {
         coVerify { searchUseCase(query) }
         assertThat(viewModel.items.value).isEqualTo(fakeItemsResponse)
         assertThat(viewModel.isLoading.value).isFalse()
-        assertThat(viewModel.resultsNotmpty.value).isTrue()
+        assertThat(viewModel.resultsNotEmpty.value).isTrue()
         assertThat(viewModel.resultsError.value).isFalse()
     }
 
@@ -73,8 +73,8 @@ class SearchViewModelTest {
         coVerify { searchUseCase(query) }
         assertThat(viewModel.items.value).isEmpty()
         assertThat(viewModel.isLoading.value).isFalse()
-        assertThat(viewModel.resultsNotmpty.value).isFalse()
-        assertThat(viewModel.resultsError.value).isFalse()
+        assertThat(viewModel.resultsNotEmpty.value).isFalse()
+        assertThat(viewModel.resultsError.value).isNull()
     }
 
     @Test
@@ -93,7 +93,7 @@ class SearchViewModelTest {
         coVerify { searchUseCase(query) }
         assertThat(viewModel.items.value).isEmpty()
         assertThat(viewModel.isLoading.value).isFalse()
-        assertThat(viewModel.resultsNotmpty.value).isNull() //esta variable no cambia en caso de error
+        assertThat(viewModel.resultsNotEmpty.value).isNull() //esta variable no cambia en caso de error
         assertThat(viewModel.resultsError.value).isTrue()
     }
 
