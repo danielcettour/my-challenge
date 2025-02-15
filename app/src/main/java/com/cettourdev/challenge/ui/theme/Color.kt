@@ -15,5 +15,8 @@ val YellowSecondary = Color(0xFFEFB701)
 val YellowTertiary = Color(0xFFFFC107)
 val LightYellow = Color(0xFFFFEE8C)
 
+val FavouriteBlue = Color(0xFF3483FA)
+val SnackbarSuccess = Color(0xFF08BA4E)
+
 val LightGray = Color(0xFFECECEC)
 val Orange = Color(0xFFFF7900)

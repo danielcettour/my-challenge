@@ -3,6 +3,9 @@
     <string name="foto_de_perfil">Foto de perfil</string>
     <string name="buscar">Buscar</string>
     <string name="favoritos">Favoritos</string>
-    <string name="revisa_tu_conexion_a_internet">Revisá tu conexión a internet...</string>
-    <string name="buscar_productos_y_mas">Buscar productos y más...</string>
+    <string name="revisa_tu_conexion_a_internet">Revisá tu conexión a internet</string>
+    <string name="error_inesperado">Ocurrió un error inesperado. Por favor intentá nuevamente más tarde</string>
+    <string name="buscar_productos_y_mas">Buscar productos y más…</string>
+    <string name="se_agrego_a_tu_lista_de_favoritos">Se agregó a tu lista de favoritos</string>
+    <string name="se_elimino_de_tu_lista_de_favoritos">Se eliminó de tu lista de favoritos</string>
 </resources>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "870884117975",
+    "project_id": "challenge-809b4",
+    "storage_bucket": "challenge-809b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:870884117975:android:7b3a6bb6685e67205f0f92",
+        "android_client_info": {
+          "package_name": "com.cettourdev.challenge"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtDi2S6tHCXyuyB7HzyqyODCykN4z7GZc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
